@@ -31,8 +31,16 @@ medicalmajors <- subset(d, major == "medicine/nursing", na.rm=T)
       o	with years of education used as a continuous variable. 
 
 ```{r}
-#check if normal
+m <- lm(data = medicalmajors, years_of_education ~ age)
+hist(m$residuals)
+library(car)
+qqPlot(m$residuals)
+s <- shapiro.test(m$residuals)
+s  #non-normal
+
+#another way to check if normal
 hist(medicalmajors$years_of_education) #non-normal
+
 #take out zeros
 non0medicalmajors <- subset(medicalmajors, years_of_education > 0)
 hist(log(non0medicalmajors$years_of_education))
