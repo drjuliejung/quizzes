@@ -1,0 +1,71 @@
+---
+title: "Oct31"
+author: "Julie Jung"
+date: "October 31, 2017"
+output: html_document
+---
+Zombie dataset – 
+-  pull out all the indivs that are medical/nursing majors
+-	what is the relationship in those indivs:
+o	–between age and years of education
+o	with years of education used as a continuous variable. 
+-	Also plot as a scatterplot with
+o	Appropriate regression line
+o	With 95% CI
+o	Color the points so that males are pink and females are blue. 
+
+```{r}
+library(curl)
+f <- curl("https://raw.githubusercontent.com/fuzzyatelin/fuzzyatelin.github.io/master/AN597_Fall17/zombies.csv")
+d <- read.csv(f, header = TRUE, sep = ",", stringsAsFactors = FALSE)
+head(d)
+```
+
+-  pull out all the indivs that are medical/nursing majors
+```{r}
+medicalmajors <- subset(d, major == "medicine/nursing", na.rm=T)
+```
+
+-  what is the relationship in those indivs:
+      o	–between age and years of education
+      o	with years of education used as a continuous variable. 
+
+```{r}
+#check if normal
+hist(medicalmajors$years_of_education) #non-normal
+#take out zeros
+non0medicalmajors <- subset(medicalmajors, years_of_education > 0)
+hist(log(non0medicalmajors$years_of_education))
+qqnorm(log(non0medicalmajors$years_of_education)) #non normal
+shapiro.test(log(non0medicalmajors$years_of_education)) # non normal
+```
+The data are non-normal, so we need to use a non-parametric test. 
+
+```{r}
+cor(medicalmajors$age, medicalmajors$years_of_education, method = "kendall")
+```
+This test indicates that the correlation between age and years of education is quite low, 0.1637. 
+
+NEXT PART: 
+
+-  Also plot as a scatterplot with
+      o	Appropriate regression line
+      o	With 95% CI
+      o	Color the points so that males are pink and females are blue. 
+
+```{r}
+library(ggplot2)
+
+males <- subset(medicalmajors, gender == "Male")
+females <- subset(medicalmajors, gender == "Female")
+
+ggplot(medicalmajors, aes(x=age, y=years_of_education, color=gender)) + 
+  geom_point(data=males, size=4, color="Pink") +
+  geom_smooth(data=males, method=lm, color="Pink") +
+  geom_point(data=females, size=4, color="Blue") +
+  geom_smooth(data=females, method=lm, color="Blue") +
+  ylab("Years of education\n")+
+  theme_bw(20) +
+  xlab("Age (years)")
+
+```
